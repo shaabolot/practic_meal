@@ -3,16 +3,17 @@ import instance from '../../Http/settings';
 
 const initialState = {
     latest: [],
+    infoMeal : [],
     loading: false,
     error: null,
 };
 
 export const getLatestMeal = createAsyncThunk(
-    'meals/getLatestMeal',
-    async (_, { rejectWithValue }) => {
+    'latest/getLatestMeal',
+    async (_, { rejectWithValue, dispatch }) => {
         try {
             const mealNumbers = [
-                53075, 53074, 53073, 53072, 53071, 53070, 53069, 53068,
+                53075, 53074, 53073, 53072, 53071, 53070, 53069, 53068
             ];
             const results = await Promise.all(
                 mealNumbers.map(async (number) => {
@@ -21,22 +22,35 @@ export const getLatestMeal = createAsyncThunk(
                 })
             );
             const combinedMeals = results.flat();
-            return combinedMeals;
+            dispatch(latestMeal(combinedMeals))
         } catch (error) {
             return rejectWithValue(error.message);
         }
     }
 );
 
+export const getInfoMeal = createAsyncThunk(
+    "infoMeal/getInfoMeal",
+    async (elem, {dispatch}) => {
+        const result = await instance.get(`lookup.php?i=${elem}`)
+        dispatch(infoIngredientMeal(result.data.meals))
+    }
+)
+
 const mealSlice = createSlice({
-    name: 'meals',
+    name: 'products',
     initialState,
     reducers: {
         latestMeal: (state, action) => {
             state.latest = action.payload;
         },
+        infoIngredientMeal: (state, action) => {
+            state.infoMeal = action.payload
+        }
     },
 });
 
-export const { latestMeal } = mealSlice.actions;
+export const { latestMeal,
+    infoIngredientMeal
+} = mealSlice.actions;
 export default mealSlice.reducer;
